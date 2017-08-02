@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "413045709566",
+    "firebase_url": "https://neomemo-f3df1.firebaseio.com",
+    "project_id": "neomemo-f3df1",
+    "storage_bucket": "neomemo-f3df1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:413045709566:android:826f65423319c892",
+        "android_client_info": {
+          "package_name": "uz.ismoilov.muhriddin.neomemo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "413045709566-sa85ao8qmdd4p8rtrbfisjm24lva6kc9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRLeXrbDtIJHhViXve_mx3N1ejwmy2luA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
