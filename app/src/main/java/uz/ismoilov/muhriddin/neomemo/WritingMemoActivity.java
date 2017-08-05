@@ -17,7 +17,7 @@ import com.google.firebase.database.Query;
 
 import java.util.List;
 
-import me.grantland.widget.AutofitHelper;
+
 
 public class WritingMemoActivity extends AppCompatActivity {
     ImageButton imageMemoEdit;
@@ -40,7 +40,7 @@ public class WritingMemoActivity extends AppCompatActivity {
         BtnCloseEdit = (Button) findViewById(R.id.BtnCloseEdit);
         fb = FirebaseDatabase.getInstance().getReference();
 
-        AutofitHelper.create(editMemoText);
+
 
         Intent i = getIntent();
         Log.v("Intent","");
