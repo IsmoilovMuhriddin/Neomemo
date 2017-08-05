@@ -31,6 +31,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.google.android.gms:play-services-auth:10.0.1'
     compile 'com.github.markushi:circlebutton:1.1'
+    compile 'me.grantland:autofittextview:0.2.+'
 }
 //firebase
 apply plugin: 'com.google.gms.google-services'
