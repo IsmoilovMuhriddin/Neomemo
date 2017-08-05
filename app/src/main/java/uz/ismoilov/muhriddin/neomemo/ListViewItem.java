@@ -10,6 +10,9 @@ import java.io.Serializable;
 
 public class ListViewItem  implements Serializable{
     private Drawable memoImage;
+    private String memoDate;
+    private String memoText;
+    private int id;
 
     public int getId() {
         return id;
@@ -19,7 +22,6 @@ public class ListViewItem  implements Serializable{
         this.id = id;
     }
 
-    private int id;
 
     public ListViewItem() {
     }
@@ -33,7 +35,6 @@ public class ListViewItem  implements Serializable{
 
 
     public Drawable getMemoImage() {
-
         return memoImage;
     }
 
@@ -57,6 +58,4 @@ public class ListViewItem  implements Serializable{
         this.memoText = memoText;
     }
 
-    private String memoDate;
-    private String memoText;
 }
