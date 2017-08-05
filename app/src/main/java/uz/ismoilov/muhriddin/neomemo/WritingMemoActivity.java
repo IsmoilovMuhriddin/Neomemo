@@ -30,6 +30,8 @@ public class WritingMemoActivity extends AppCompatActivity {
     int ChildCounts;
     int id;
     private FirebaseUser fUser;
+    private String fUserId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +43,7 @@ public class WritingMemoActivity extends AppCompatActivity {
         BtnCloseEdit = (Button) findViewById(R.id.BtnCloseEdit);
         fb = FirebaseDatabase.getInstance().getReference();
         fUser =  FirebaseAuth.getInstance().getCurrentUser();
+        fUserId = fUser.getUid();
         Intent i = getIntent();
         Log.v("Intent","");
         handleIntent(i);
@@ -87,7 +90,7 @@ public class WritingMemoActivity extends AppCompatActivity {
     }
 
     public void saveNew(){
-        DatabaseReference notes = fb.child("users/"+fUser.toString());
+        DatabaseReference notes = fb.child("users").child(fUserId.toString());
 
         if(id==-1){
             id = ChildCounts+1;

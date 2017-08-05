@@ -43,7 +43,10 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseUser fUser;
 
+
     public List<ListViewItem> items;
+    private String fUserId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     fUser = mAuth.getCurrentUser();
+                    fUserId = fUser.getUid();
                     btn_new_memo = (Button) findViewById(R.id.btn_new_memo);
                     btn_Close = (Button) findViewById(R.id.btn_Close);
 
@@ -136,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
     }
     public void getItemsFromFire(){
         Log.v("function","here executed");
-        final DatabaseReference notes = fb.child("users/"+fUser.toString());
+        final DatabaseReference notes = fb.child("users").child(fUserId.toString());
 
         Query qAll = notes.limitToFirst(100);
         Query qlast = notes.orderByKey().limitToLast(1);
