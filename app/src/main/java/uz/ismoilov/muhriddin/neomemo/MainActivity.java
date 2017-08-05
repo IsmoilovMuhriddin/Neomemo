@@ -51,12 +51,63 @@ public class MainActivity extends AppCompatActivity {
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+            public void onAuthStateChanged(@NonNull final FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
+                    btn_new_memo = (Button) findViewById(R.id.btn_new_memo);
+                    btn_Close = (Button) findViewById(R.id.btn_Close);
+
+                    recyclerMemo = (RecyclerView)findViewById(R.id.recyclerMemo);
+                    recyclerMemo.setHasFixedSize(true);
+
+                    recyclerLayout = new LinearLayoutManager(MainActivity.this);
+                    recyclerMemo.setLayoutManager(recyclerLayout);
+                    items = new ArrayList<>();
+
+
+                    fb = FirebaseDatabase.getInstance().getReference();
+                    getItemsFromFire();
+                    recyclerAdapter = new MyAdapter(items);
+                    recyclerMemo.setAdapter(recyclerAdapter);
+
+                    recyclerAdapter.setClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            int pos = recyclerMemo.indexOfChild(v);
+                            ListViewItem ls = recyclerAdapter.getListviewItem(pos);
+                            int id = ls.getId();
+                            Intent i = new Intent(MainActivity.this,WritingMemoActivity.class);
+
+                            i.putExtra("id",id);
+                            i.putExtra("ListViewItem",ls);
+                            i.putExtra("ChildCounts",ChildCounts);
+                            startActivity(i);
+
+                        }
+                    });
+
+                    btn_new_memo.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Intent i = new Intent(MainActivity.this,WritingMemoActivity.class);
+                            i.putExtra("id",-1);
+                            i.putExtra("ChildCounts",ChildCounts);
+                            startActivity(i);
+
+
+                        }
+                    });
+
 
 
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+                    btn_Close.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            FirebaseAuth.getInstance().signOut();
+                        }
+                    });
+
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
@@ -66,50 +117,6 @@ public class MainActivity extends AppCompatActivity {
                 // ...
             }
         };
-        btn_new_memo = (Button) findViewById(R.id.btn_new_memo);
-        btn_Close = (Button) findViewById(R.id.btn_Close);
-
-        recyclerMemo = (RecyclerView)findViewById(R.id.recyclerMemo);
-        recyclerMemo.setHasFixedSize(true);
-
-        recyclerLayout = new LinearLayoutManager(this);
-        recyclerMemo.setLayoutManager(recyclerLayout);
-        items = new ArrayList<>();
-
-
-        fb = FirebaseDatabase.getInstance().getReference();
-        getItemsFromFire();
-        recyclerAdapter = new MyAdapter(items);
-        recyclerMemo.setAdapter(recyclerAdapter);
-
-        recyclerAdapter.setClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int pos = recyclerMemo.indexOfChild(v);
-                ListViewItem ls = recyclerAdapter.getListviewItem(pos);
-                int id = ls.getId();
-                Intent i = new Intent(MainActivity.this,WritingMemoActivity.class);
-
-                i.putExtra("id",id);
-                i.putExtra("ListViewItem",ls);
-                i.putExtra("ChildCounts",ChildCounts);
-                startActivity(i);
-
-            }
-        });
-
-        btn_new_memo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(MainActivity.this,WritingMemoActivity.class);
-                i.putExtra("id",-1);
-                i.putExtra("ChildCounts",ChildCounts);
-                startActivity(i);
-
-
-            }
-        });
-
 
     }
     @Override
