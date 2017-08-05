@@ -19,7 +19,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".WritingMemoActivity" />
-        <activity android:name=".LoginActivity" />
+
         <intent-filter>
 
 

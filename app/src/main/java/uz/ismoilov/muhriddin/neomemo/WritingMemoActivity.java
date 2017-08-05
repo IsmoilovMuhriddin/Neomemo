@@ -11,13 +11,13 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 
 import java.util.List;
-
-
 
 public class WritingMemoActivity extends AppCompatActivity {
     ImageButton imageMemoEdit;
@@ -29,6 +29,7 @@ public class WritingMemoActivity extends AppCompatActivity {
     DatabaseReference fb;
     int ChildCounts;
     int id;
+    private FirebaseUser fUser;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,9 +40,7 @@ public class WritingMemoActivity extends AppCompatActivity {
         btnSaveEdit = (Button) findViewById(R.id.btnSaveEdit);
         BtnCloseEdit = (Button) findViewById(R.id.BtnCloseEdit);
         fb = FirebaseDatabase.getInstance().getReference();
-
-
-
+        fUser =  FirebaseAuth.getInstance().getCurrentUser();
         Intent i = getIntent();
         Log.v("Intent","");
         handleIntent(i);
@@ -88,7 +87,7 @@ public class WritingMemoActivity extends AppCompatActivity {
     }
 
     public void saveNew(){
-        DatabaseReference notes = fb.child("Notes");
+        DatabaseReference notes = fb.child("users/"+fUser.toString());
 
         if(id==-1){
             id = ChildCounts+1;

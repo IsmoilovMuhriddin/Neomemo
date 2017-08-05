@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     Button btn_Close;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
+    private FirebaseUser fUser;
 
     public List<ListViewItem> items;
     @Override
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
             public void onAuthStateChanged(@NonNull final FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
+                    fUser = mAuth.getCurrentUser();
                     btn_new_memo = (Button) findViewById(R.id.btn_new_memo);
                     btn_Close = (Button) findViewById(R.id.btn_Close);
 
@@ -134,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
     }
     public void getItemsFromFire(){
         Log.v("function","here executed");
-        final DatabaseReference notes = fb.child("Notes");
+        final DatabaseReference notes = fb.child("users/"+fUser.toString());
 
         Query qAll = notes.limitToFirst(100);
         Query qlast = notes.orderByKey().limitToLast(1);
