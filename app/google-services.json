@@ -15,6 +15,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "413045709566-1b99daq2foi9h7ke08cbe03v3huu4lid.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "uz.ismoilov.muhriddin.neomemo",
+            "certificate_hash": "173d830364847ec3741ec59773c8e6f5c7544d91"
+          }
+        },
+        {
+          "client_id": "413045709566-qv9rm35af324ff6fpt0im87u8l5rd692.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "uz.ismoilov.muhriddin.neomemo",
+            "certificate_hash": "bc51a69277271e932cd8fe7d637bd87d84f44c12"
+          }
+        },
+        {
           "client_id": "413045709566-sa85ao8qmdd4p8rtrbfisjm24lva6kc9.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,8 +45,13 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "413045709566-sa85ao8qmdd4p8rtrbfisjm24lva6kc9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
           "status": 2
