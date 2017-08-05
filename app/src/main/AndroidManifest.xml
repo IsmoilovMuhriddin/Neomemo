@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="uz.ismoilov.muhriddin.neomemo">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -17,7 +19,15 @@
             </intent-filter>
         </activity>
         <activity android:name=".WritingMemoActivity" />
-        <activity android:name=".LoginActivity"></activity>
+        <activity android:name=".LoginActivity" />
+        <intent-filter>
+
+
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+        <activity android:name=".SignInActivity">
+
+        </activity>
     </application>
 
 </manifest>
