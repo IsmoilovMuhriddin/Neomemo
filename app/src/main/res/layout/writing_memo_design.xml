@@ -52,6 +52,18 @@
 
     </LinearLayout>
     <EditText
+        android:padding="10dp"
+        android:id="@+id/ediTitle"
+        android:background="@drawable/border"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:hint="Title"
+        android:ems="10"
+        android:gravity="left"
+        />
+    <EditText
         android:id="@+id/editText1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -21,13 +21,11 @@
         <activity android:name=".WritingMemoActivity" />
 
         <intent-filter>
-
-
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
-        <activity android:name=".SignInActivity">
 
-        </activity>
+        <activity android:name=".SignInActivity"></activity>
+        <activity android:name=".testactivity"></activity>
     </application>
 
 </manifest>
