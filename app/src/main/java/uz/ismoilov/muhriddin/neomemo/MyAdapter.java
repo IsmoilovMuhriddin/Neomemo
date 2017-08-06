@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.database.DatabaseReference;
+
 import java.util.List;
 
 /**
@@ -74,6 +76,8 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder>  {
         }
         return ls;
     }
+
+
 
     public void setClickListener(View.OnClickListener callback) {
         mClickListener = callback;

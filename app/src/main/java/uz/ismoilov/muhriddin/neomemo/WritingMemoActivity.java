@@ -59,8 +59,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 public class WritingMemoActivity extends AppCompatActivity {
     private static final String TAG = "PHOTO";
@@ -169,26 +171,32 @@ public class WritingMemoActivity extends AppCompatActivity {
         else if(id>0){
             ListViewItem lsComing =(ListViewItem) i.getSerializableExtra("ListViewItem");
             editMemoText.setText(lsComing.getMemoText().toString());
-            String [] ar = lsComing.getMemoDate().toString().split(" ");
-            setDateOfMemo(ar[0]);
-            setTimeOfMemo(ar[1]);
+
+
             ls.setMemoDate(lsComing.getMemoDate());
             memoDateTV.setText(lsComing.getMemoDate());
             Bitmap bitmap = null;
-            try {
-                Uri filepath = Uri.fromFile(new File(lsComing.getLocalPath()));
 
-                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
-               if(bitmap !=null) {
+            if(lsComing.getLocalPath()!=null)
+            {
+                Uri FileGet = Uri.fromFile(new File(lsComing.getLocalPath()));
+                if(FileGet!=null)
+                    try {
+                        bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), FileGet);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                if(bitmap !=null) {
                    Imgview.setImageBitmap(bitmap);
                    ls.setLocalPath(lsComing.getLocalPath());
 
                    ls.setFirebasePath(lsComing.getFirebasePath());
+                    Imgview.setImageBitmap(bitmap);
                }
-               } catch (IOException e) {
-                e.printStackTrace();
+
+
             }
-            Imgview.setImageBitmap(bitmap);
+
             btnSaveEdit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -271,7 +279,7 @@ public class WritingMemoActivity extends AppCompatActivity {
 
         ls.setMemoText(editMemoText.getText().toString());
 
-        ls.setMemoDate(getDateOfMemo()+" "+getTimeOfMemo());
+        ls.setMemoDate(ls.getMemoDate());
         ls.setId(id);
         notes.child(id+"").setValue(ls);
         Intent i = new Intent(WritingMemoActivity.this,MainActivity.class);
@@ -393,22 +401,37 @@ public class WritingMemoActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void chooseDateBtn(View view) {
-
-        int year = Integer.parseInt(ls.getMemoDate().substring(0, 4));
-        int month = Integer.parseInt(ls.getMemoDate().substring(5, 7));
-        int day = Integer.parseInt(ls.getMemoDate().substring(8, 10));
+        int year,day,month;
+        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
+        year = calendar.get(Calendar.YEAR);
+        month = calendar.get(Calendar.MONTH);
+        day = calendar.get(Calendar.DAY_OF_MONTH);
+        if(ls.getMemoDate()!=null) {
+            Log.i(TAG,ls.getMemoDate());
+             year = Integer.parseInt(ls.getMemoDate().substring(0, 4));
+            month = Integer.parseInt(ls.getMemoDate().substring(5, 7));
+             day = (Integer.parseInt(ls.getMemoDate().substring(8, 10)));
+        }
         //Toast.makeText(this, "" + year + month + day, Toast.LENGTH_SHORT).show();
+
         DatePickerDialog dialog = new DatePickerDialog(this, null, year, month -1 , day);
         dialog.show();
         dialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int y, int m, int d) {
-                String date = y+"/"+m+"/"+d;
+                String m0 = (m<10)?"0"+m:m+"";
+                String d0 =(d<10)?"0"+d:d+"";
+                String date = y+"/"+m0+"/"+d0;
                 ls.setMemoDate(date);
                 memoDateTV.setText(ls.getMemoDate());
+
             }
         });
 
+    }
+
+    private void deleteNode(DatabaseReference useridref, int NoteID){
+        useridref.child(NoteID+"").removeValue();
     }
 }
 
