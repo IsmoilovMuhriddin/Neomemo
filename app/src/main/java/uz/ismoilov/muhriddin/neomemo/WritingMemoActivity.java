@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.Image;
@@ -190,11 +191,14 @@ public class WritingMemoActivity extends AppCompatActivity {
             }
             if (requestCode == REQUEST_CODE_BROWSE && resultCode == RESULT_OK && data != null && data.getData() != null) {
                 imgUri = data.getData();
+                String s = getRealPathFromURI(imgUri);
 
+                ls.setLocalPath(getRealPathFromURI(imgUri));
+                String FileName = imgUri.getLastPathSegment();
                 try {
                     Bitmap bm = MediaStore.Images.Media.getBitmap(getContentResolver(), imgUri);
                     Imgview.setImageBitmap(bm);
-                    ls.setLocalPath(imgUri.getPath());
+                    ls.setImageName(FileName);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -243,9 +247,10 @@ public class WritingMemoActivity extends AppCompatActivity {
 
             Uri file = Uri.fromFile(new File(ls.getLocalPath()));
             String FileName = ls.getLocalPath();
-            StorageReference currentImagesRef = userImages.child(FileName.substring(FileName.indexOf("Images/")+7,FileName.length()));
+            StorageReference currentImagesRef = userImages.child(ls.getImageName());
             Log.i(TAG,FileName.substring(FileName.indexOf("Images/")+7,FileName.length()));
 
+            Log.i(TAG,ls.getImageName());
 
             UploadTask uploadTask = currentImagesRef.putFile(file);
             uploadTask.addOnFailureListener(new OnFailureListener() {
@@ -296,7 +301,7 @@ public class WritingMemoActivity extends AppCompatActivity {
             OutputStream stream = null;
             stream = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.PNG,100,stream);
-
+            ls.setImageName(FileName);
             ls.setLocalPath(file.getPath());
             Log.i(TAG,"write"+file.getPath());
             stream.flush();
@@ -324,6 +329,15 @@ public class WritingMemoActivity extends AppCompatActivity {
         DateOfMemo = dateOfMemo;
     }
 
+    public String getRealPathFromURI(Uri uri) {
+        String[] projection = { MediaStore.Images.Media.DATA };
+        @SuppressWarnings("deprecation")
+        Cursor cursor = managedQuery(uri, projection, null, null, null);
+        int column_index = cursor
+                .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        return cursor.getString(column_index);
+    }
 }
 
 

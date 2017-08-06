@@ -14,7 +14,15 @@ public class ListViewItem  implements Serializable{
     private String FirebasePath;
     private String LastEdited;
     private String isUpdated;
+    private  String ImageName;
 
+    public String getImageName() {
+        return ImageName;
+    }
+
+    public void setImageName(String imageName) {
+        ImageName = imageName;
+    }
 
     private String memoDate;
     private String memoText;
