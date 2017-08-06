@@ -10,6 +10,12 @@ import java.io.Serializable;
 
 public class ListViewItem  implements Serializable{
     private Drawable memoImage;
+    private String LocalPath;
+    private String FirebasePath;
+    private String LastEdited;
+    private String isUpdated;
+
+
     private String memoDate;
     private String memoText;
     private int id;
@@ -58,4 +64,35 @@ public class ListViewItem  implements Serializable{
         this.memoText = memoText;
     }
 
+    public String getLocalPath() {
+        return LocalPath;
+    }
+
+    public void setLocalPath(String localPath) {
+        LocalPath = localPath;
+    }
+
+    public String getFirebasePath() {
+        return FirebasePath;
+    }
+
+    public void setFirebasePath(String firebasePath) {
+        FirebasePath = firebasePath;
+    }
+
+    public String getLastEdited() {
+        return LastEdited;
+    }
+
+    public void setLastEdited(String lastEdited) {
+        LastEdited = lastEdited;
+    }
+
+    public String getIsUpdated() {
+        return isUpdated;
+    }
+
+    public void setIsUpdated(String isUpdated) {
+        this.isUpdated = isUpdated;
+    }
 }

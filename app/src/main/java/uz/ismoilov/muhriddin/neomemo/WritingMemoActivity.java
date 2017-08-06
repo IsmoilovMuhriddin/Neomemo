@@ -23,17 +23,24 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -49,8 +56,13 @@ public class WritingMemoActivity extends AppCompatActivity {
     Button btnSaveEdit;
     Button BtnCloseEdit;
     RecyclerView recyclerMemo;
-    DatabaseReference fb;
     ImageView Imgview;
+
+    ListViewItem ls;
+    StorageReference storageRef;
+    DatabaseReference fb;
+    FirebaseStorage fb_storage;
+    StorageReference usersStorageRef;
     int ChildCounts;
     int id;
     private FirebaseUser fUser;
@@ -73,10 +85,19 @@ public class WritingMemoActivity extends AppCompatActivity {
         Imgview = (ImageView) findViewById(R.id.Imgview);
 
         cameraImgButton = (ImageButton) findViewById(R.id.cameraImgButton);
+
+        ls = new ListViewItem();
         fb = FirebaseDatabase.getInstance().getReference();
+        fb_storage = FirebaseStorage.getInstance();
+
+        storageRef = fb_storage.getReference();
+        usersStorageRef = storageRef.child("users");
+
 
         fUser =  FirebaseAuth.getInstance().getCurrentUser();
         fUserId = fUser.getUid();
+
+
         Intent i = getIntent();
         Log.v("Intent","");
         handleIntent(i);
@@ -143,7 +164,30 @@ public class WritingMemoActivity extends AppCompatActivity {
 
         }
 
-        ListViewItem ls = new ListViewItem();
+        StorageReference userImages = usersStorageRef.child(fUserId.toString()).child("images");
+        if(ls.getLocalPath()!= null){
+
+                Uri file = Uri.fromFile(new File(getFilesDir()+"/"+ls.getLocalPath()));
+                StorageReference currentImagesRef = userImages.child(ls.getLocalPath());
+
+                UploadTask uploadTask = currentImagesRef.putFile(file);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+
+                    }
+                });
+                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+
+                        Log.i(TAG,"Herea uploaded ");
+                    }
+                });
+
+        }
         ls.setMemoText(editMemoText.getText().toString());
 
         ls.setMemoDate(getDateOfMemo()+" "+getTimeOfMemo());
@@ -188,8 +232,8 @@ public class WritingMemoActivity extends AppCompatActivity {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         //thumbnail.compress(Bitmap.CompressFormat.PNG, 100, bytes);
         Log.i(TAG,"thumbnail");
-        File destination = new File(getFilesDir(),
-                "IMG_"+System.currentTimeMillis() + ".png");
+        String FileName = "IMG_"+System.currentTimeMillis() + ".png";
+        File destination = new File(getFilesDir(),FileName);
         Log.i(TAG,"FILE");
         FileOutputStream fo;
         try {
@@ -197,7 +241,7 @@ public class WritingMemoActivity extends AppCompatActivity {
             fo = new FileOutputStream(destination);
             fo.write(bytes.toByteArray());
             Log.i(TAG,"write"+destination.toString());
-
+            ls.setLocalPath(FileName);
             Log.i(TAG,"space"+destination.getTotalSpace());
             fo.close();
         } catch (FileNotFoundException e) {
