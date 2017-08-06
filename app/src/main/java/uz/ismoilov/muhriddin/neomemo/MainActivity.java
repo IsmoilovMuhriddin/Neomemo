@@ -1,5 +1,6 @@
 package uz.ismoilov.muhriddin.neomemo;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
@@ -9,9 +10,12 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -46,6 +50,44 @@ public class MainActivity extends AppCompatActivity {
 
     public List<ListViewItem> items;
     private String fUserId;
+
+    //menu Item added
+    private CursorAdapter cursorAdapter;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.action_create_sample:
+                insertSampleData();
+                break;
+            case R.id.action_delete_all:
+
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+    private void insertSampleData() {
+        insertNote("Simple note");
+        insertNote("Multi-line\nnote");
+        insertNote("Very long note with a lot of text that exceeds the width of the screen");
+
+    }
+
+    private void insertNote(String noteText) {
+        ContentValues values = new ContentValues();}
+    //menu Item finished
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

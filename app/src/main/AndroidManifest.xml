@@ -25,11 +25,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-        <provider
-            android:authorities="uz.ismoilov.muhriddin.neomemo.notesprovider"
-            android:name=".NotesProvider"
-            android:exported="false"
-            />
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
