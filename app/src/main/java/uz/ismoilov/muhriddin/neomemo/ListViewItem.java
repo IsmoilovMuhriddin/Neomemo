@@ -15,6 +15,15 @@ public class ListViewItem  implements Serializable{
     private String LastEdited;
     private String isUpdated;
     private  String ImageName;
+    private ImageUpload img;
+
+    public ImageUpload getImg() {
+        return img;
+    }
+
+    public void setImg(ImageUpload img) {
+        this.img = img;
+    }
 
     public String getImageName() {
         return ImageName;

@@ -1,13 +1,18 @@
 package uz.ismoilov.muhriddin.neomemo;
 import android.Manifest;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
@@ -190,16 +195,33 @@ public class WritingMemoActivity extends AppCompatActivity {
             }
             if (requestCode == REQUEST_CODE_BROWSE && resultCode == RESULT_OK && data != null && data.getData() != null) {
                 imgUri = data.getData();
+                //MEDIA GALLERY
 
+                String[] projection = {MediaStore.Images.Media.DATA};
+
+                Cursor cursor = getContentResolver().query(imgUri, projection, null, null, null);
+                cursor.moveToFirst();
+
+                int columnIndex = cursor.getColumnIndex(projection[0]);
+                String filepath = cursor.getString(columnIndex);
+                cursor.close();
+                ls.setImageName(imgUri.getLastPathSegment());
+                Log.i(TAG,"ABSOLUTEPATH "+filepath);
                 try {
-                    Bitmap bm = MediaStore.Images.Media.getBitmap(getContentResolver(), imgUri);
+                    Bitmap bm = BitmapFactory.decodeFile(filepath);
+                    Drawable drawable  = new BitmapDrawable(bm);
+                    //Bitmap bm = MediaStore.Images.Media.getBitmap(getContentResolver(), imgUri);
                     Imgview.setImageBitmap(bm);
-                    ls.setLocalPath(imgUri.getPath());
-                } catch (FileNotFoundException e) {
+                    ls.setLocalPath(filepath);
+                }
+                finally {
+                    Log.i(TAG,"Error o bitmao drawable");
+                }
+                /* catch (FileNotFoundException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
+                }*/
             }
          }
 
@@ -211,9 +233,9 @@ public class WritingMemoActivity extends AppCompatActivity {
         return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
     }
     public void browseIntent() {
-        Intent intent = new Intent();
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
+
         startActivityForResult(Intent.createChooser(intent, "Select image"), REQUEST_CODE_BROWSE);
     }
     private void cameraIntent(){
@@ -322,6 +344,19 @@ public class WritingMemoActivity extends AppCompatActivity {
     }
     public void setDateOfMemo(String dateOfMemo) {
         DateOfMemo = dateOfMemo;
+    }
+
+    public String getRealPathFromURI( Uri contentUri) {
+        Cursor cursor = null;
+
+            String[] proj = {MediaStore.Images.Media.DATA};
+            cursor = managedQuery(contentUri, proj, null, null, null);
+            if(cursor==null) return null;
+
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+
     }
 
 }
