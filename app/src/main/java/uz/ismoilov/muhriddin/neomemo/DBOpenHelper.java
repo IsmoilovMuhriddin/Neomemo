@@ -29,6 +29,7 @@ public class DBOpenHelper extends SQLiteOpenHelper{
                     NOTE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     NOTE_TEXT + " TEXT, " +
                     NOTE_CREATED + " TEXT default CURRENT_TIMESTAMP" +
+
                     ")";
 
     public DBOpenHelper(Context context) {
