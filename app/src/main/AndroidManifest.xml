@@ -40,7 +40,6 @@
         </intent-filter>
 
         <activity android:name=".SignInActivity" />
-        <activity android:name=".testactivity" />
     </application>
 
 </manifest>

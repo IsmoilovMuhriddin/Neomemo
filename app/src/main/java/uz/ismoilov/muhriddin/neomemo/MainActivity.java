@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
                     fUser = mAuth.getCurrentUser();
                     fUserId = fUser.getUid();
                     btn_new_memo = (Button) findViewById(R.id.btn_new_memo);
-                    btn_Close = (Button) findViewById(R.id.btn_Close);
+
 
                     recyclerMemo = (RecyclerView)findViewById(R.id.recyclerMemo);
                     recyclerMemo.setHasFixedSize(true);
@@ -247,9 +247,5 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void GOTO_DESIGN(View view) {
-        Intent i = new Intent(MainActivity.this,testactivity.class);
-        startActivity(i);
 
-    }
 }
