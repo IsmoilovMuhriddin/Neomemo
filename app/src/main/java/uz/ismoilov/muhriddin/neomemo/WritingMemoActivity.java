@@ -1,6 +1,9 @@
 package uz.ismoilov.muhriddin.neomemo;
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.ContentResolver;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -17,11 +20,13 @@ import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -31,6 +36,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
@@ -41,17 +47,20 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 public class WritingMemoActivity extends AppCompatActivity {
-    private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 1888;
     private static final String TAG = "PHOTO";
     private static final String JPEG_FILE_PREFIX = "IMG_";
     private static final int CAMERA_PERMISSION_REQUEST_CODE =1247 ;
-    ImageButton imageMemoEdit;
+    private static final int REQUEST_CODE_BROWSE = 1234;
+    static final int REQUEST_TAKE_PHOTO = 1;
+
     EditText editMemoText;
+    ImageButton imageMemoEdit;
     ImageButton btnDatePick;
     Button btnSaveEdit;
     Button BtnCloseEdit;
@@ -72,7 +81,7 @@ public class WritingMemoActivity extends AppCompatActivity {
     private String DateOfMemo;
     private String TimeOfMemo;
     private ImageButton cameraImgButton;
-
+    private Uri imgUri;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,6 +89,7 @@ public class WritingMemoActivity extends AppCompatActivity {
 
         editMemoText = (EditText) findViewById(R.id.editMemoText);
         btnDatePick = (ImageButton) findViewById(R.id.btnDatePick);
+        imageMemoEdit =(ImageButton)findViewById(R.id.imageMemoEdit);
         btnSaveEdit = (Button) findViewById(R.id.btnSaveEdit);
         BtnCloseEdit = (Button) findViewById(R.id.BtnCloseEdit);
         Imgview = (ImageView) findViewById(R.id.Imgview);
@@ -116,9 +126,15 @@ public class WritingMemoActivity extends AppCompatActivity {
                 }
             }
         });
+        imageMemoEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                browseIntent();
+            }
+        });
+
 
     }
-
 
     public void handleIntent(Intent i){
         id = i.getIntExtra("id",-2);
@@ -154,8 +170,60 @@ public class WritingMemoActivity extends AppCompatActivity {
 
     }
 
+    public String getTimeOfMemo() {
+        return TimeOfMemo;
+    }
 
+    public void setTimeOfMemo(String timeOfMemo) {
+        TimeOfMemo = timeOfMemo;
+    }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+        Log.i(TAG,"RESULT_OK");
+            if (requestCode == REQUEST_TAKE_PHOTO) {
+                Log.i(TAG, "RESULT_Request");
+                onCaptureImageResult(data);
+            }
+            if (requestCode == REQUEST_CODE_BROWSE && resultCode == RESULT_OK && data != null && data.getData() != null) {
+                imgUri = data.getData();
+
+                try {
+                    Bitmap bm = MediaStore.Images.Media.getBitmap(getContentResolver(), imgUri);
+                    Imgview.setImageBitmap(bm);
+                    ls.setLocalPath(imgUri.getPath());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+         }
+
+    }
+
+    public String getImageExt(Uri uri) {
+        ContentResolver contentResolver = getContentResolver();
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+        return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
+    }
+    public void browseIntent() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select image"), REQUEST_CODE_BROWSE);
+    }
+    private void cameraIntent(){
+        Log.i(TAG,"Intent");
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        Log.i(TAG,"startactivity");
+        startActivityForResult(intent, REQUEST_TAKE_PHOTO);
+    }
+
+    @SuppressWarnings("VisibleForTests")
     public void saveNew(){
         DatabaseReference notes = fb.child("users").child(fUserId.toString());
 
@@ -166,28 +234,43 @@ public class WritingMemoActivity extends AppCompatActivity {
 
         StorageReference userImages = usersStorageRef.child(fUserId.toString()).child("images");
         if(ls.getLocalPath()!= null){
+            final ProgressDialog dialog = new ProgressDialog(this);
+            dialog.setTitle("Uploading image");
+            dialog.show();
 
-                Uri file = Uri.fromFile(new File(getFilesDir()+"/"+ls.getLocalPath()));
-                StorageReference currentImagesRef = userImages.child(ls.getLocalPath());
+            ContextWrapper wrapper = new ContextWrapper(getApplicationContext());
+            File fileDir = wrapper.getDir("Images",MODE_PRIVATE);
 
-                UploadTask uploadTask = currentImagesRef.putFile(file);
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        // Handle unsuccessful uploads
+            Uri file = Uri.fromFile(new File(ls.getLocalPath()));
+            String FileName = ls.getLocalPath();
+            StorageReference currentImagesRef = userImages.child(FileName.substring(FileName.indexOf("Images/")+7,FileName.length()));
+            Log.i(TAG,FileName.substring(FileName.indexOf("Images/")+7,FileName.length()));
 
-                    }
-                });
-                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
 
-                        Log.i(TAG,"Herea uploaded ");
-                    }
-                });
+            UploadTask uploadTask = currentImagesRef.putFile(file);
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
 
+                    //Dimiss dialog when error
+                    dialog.dismiss();
+                    //Display err toast msg
+                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+
+                            //Show upload progress
+
+                        }
+                    });
+        } else {
+            Toast.makeText(getApplicationContext(), "Please select image", Toast.LENGTH_SHORT).show();
         }
+
         ls.setMemoText(editMemoText.getText().toString());
 
         ls.setMemoDate(getDateOfMemo()+" "+getTimeOfMemo());
@@ -199,71 +282,32 @@ public class WritingMemoActivity extends AppCompatActivity {
 
 
     }
-
-
-    public String getDateOfMemo() {
-        return DateOfMemo;
-    }
-
-    public void setDateOfMemo(String dateOfMemo) {
-        DateOfMemo = dateOfMemo;
-    }
-
-    public String getTimeOfMemo() {
-        return TimeOfMemo;
-    }
-
-    public void setTimeOfMemo(String timeOfMemo) {
-        TimeOfMemo = timeOfMemo;
-    }
-
-
-    static final int REQUEST_TAKE_PHOTO = 1;
-
-
-    private void cameraIntent(){
-    Log.i(TAG,"Intent");
-    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-    Log.i(TAG,"startactivity");
-    startActivityForResult(intent, REQUEST_TAKE_PHOTO);
-}
     private void onCaptureImageResult(Intent data) {
-        Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        Bitmap bitmap = (Bitmap) data.getExtras().get("data");
+        ContextWrapper wrapper = new ContextWrapper(getApplicationContext());
         //thumbnail.compress(Bitmap.CompressFormat.PNG, 100, bytes);
         Log.i(TAG,"thumbnail");
+        File file = wrapper.getDir("Images",MODE_PRIVATE);
         String FileName = "IMG_"+System.currentTimeMillis() + ".png";
-        File destination = new File(getFilesDir(),FileName);
-        Log.i(TAG,"FILE");
-        FileOutputStream fo;
-        try {
-            destination.createNewFile();
-            fo = new FileOutputStream(destination);
-            fo.write(bytes.toByteArray());
-            Log.i(TAG,"write"+destination.toString());
-            ls.setLocalPath(FileName);
-            Log.i(TAG,"space"+destination.getTotalSpace());
-            fo.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+
+        file = new File(file,FileName );
+
+        try{
+            OutputStream stream = null;
+            stream = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG,100,stream);
+
+            ls.setLocalPath(file.getPath());
+            Log.i(TAG,"write"+file.getPath());
+            stream.flush();
+            stream.close();
+
+        }catch (IOException e) // Catch the exception
+        {
             e.printStackTrace();
         }
-
-        Imgview.setImageBitmap(thumbnail);
+      Imgview.setImageBitmap(bitmap);
     }
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == RESULT_OK) {
-        Log.i(TAG,"RESULT_OK");
-            if (requestCode == REQUEST_TAKE_PHOTO)
-                Log.i(TAG,"RESULT_Request");
-                onCaptureImageResult(data);
-        }
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -273,6 +317,13 @@ public class WritingMemoActivity extends AppCompatActivity {
             }
         }
     }
+    public String getDateOfMemo() {
+        return DateOfMemo;
+    }
+    public void setDateOfMemo(String dateOfMemo) {
+        DateOfMemo = dateOfMemo;
+    }
+
 }
 
 
