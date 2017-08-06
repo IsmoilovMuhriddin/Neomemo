@@ -66,6 +66,18 @@
         android:ems="10"
         android:gravity="left"
         />
+    <TextView
+        android:padding="2dp"
+        android:id="@+id/dateText"
+        android:background="#FFFFF6CE"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:hint="Date Appears Here"
+        android:ems="10"
+        android:gravity="right"
+        />
     <EditText
         android:id="@+id/editText1"
         android:layout_width="match_parent"
