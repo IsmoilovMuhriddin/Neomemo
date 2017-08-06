@@ -16,6 +16,9 @@ public class ListViewItem  implements Serializable{
     private String isUpdated;
     private  String ImageName;
     private ImageUpload img;
+    private String memoDate;
+    private String memoText;
+    private int id;
 
     public ImageUpload getImg() {
         return img;
@@ -33,9 +36,6 @@ public class ListViewItem  implements Serializable{
         ImageName = imageName;
     }
 
-    private String memoDate;
-    private String memoText;
-    private int id;
 
     public int getId() {
         return id;

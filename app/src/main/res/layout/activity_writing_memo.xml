@@ -49,6 +49,7 @@
             android:padding="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:onClick="chooseDateBtn"
             android:src="@drawable/ic_date_range_black_24dp"
             android:background="#FFFFDF6C"
 
@@ -90,6 +91,11 @@
             android:ems="10"
             android:gravity="left"
             />
+    <TextView
+        android:layout_width="match_parent"
+        android:id="@+id/memoDateTV"
+        android:layout_height="wrap_content"
+        android:background="@drawable/border"/>
         <EditText
             android:overScrollMode="always"
             android:scrollbarStyle="insideInset"

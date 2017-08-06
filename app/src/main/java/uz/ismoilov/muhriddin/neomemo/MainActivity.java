@@ -181,7 +181,13 @@ public class MainActivity extends AppCompatActivity {
 
                                 listitem.setId(Integer.parseInt(noteDetails.getValue().toString()));
                             }
+                            else if(noteDetails.getKey().toString().equals("LocalPath")){}
+                            else if(noteDetails.getKey().toString().equals("ImageName")){}
+                            else if(noteDetails.getKey().toString().equals("id")){}
+                            else if(noteDetails.getKey().toString().equals("id")){}
+
                             else {
+
                                 Log.v("NOTES","NOT FOUND??????????????????");
                             }
                         }
@@ -199,4 +205,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    public void GOTO_DESIGN(View view) {
+        Intent i = new Intent(MainActivity.this,testactivity.class);
+        startActivity(i);
+
+    }
 }

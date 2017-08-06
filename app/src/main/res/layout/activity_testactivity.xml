@@ -1,9 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="uz.ismoilov.muhriddin.neomemo.testactivity">
 
-</android.support.constraint.ConstraintLayout>
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#fff6ce"
+            android:padding="4dp"
+
+            >
+            <ImageButton
+                android:layout_margin="2dp"
+                android:padding="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_format_list_bulleted_black_64dp"
+                android:background="#FFFFDF6C"
+                />
+            <ImageButton
+                android:layout_margin="2dp"
+                android:padding="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_image_black_24dp"
+                android:background="#FFFFDF6C"
+                />
+            <ImageButton
+                android:layout_margin="2dp"
+                android:padding="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_camera_black_36dp"
+                android:background="#FFFFDF6C"
+                />
+            <ImageButton
+                android:layout_margin="2dp"
+                android:padding="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_date_range_black_24dp"
+                android:background="#FFFFDF6C"
+
+                />
+            <Button
+                android:layout_margin="2dp"
+                android:background="#FFFFDF6C"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Save"
+                />
+
+        </LinearLayout>
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:padding="10dp"
+            android:id="@+id/ediTitle"
+            android:background="@drawable/border"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:hint="Title"
+            android:ems="10"
+            android:gravity="left"
+            />
+        <EditText
+            android:id="@+id/editText1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:ems="10"
+            android:gravity="center"
+            android:background="@drawable/edit_text_background"/>
+
+</LinearLayout>

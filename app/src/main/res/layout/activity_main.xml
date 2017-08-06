@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="uz.ismoilov.muhriddin.neomemo.MainActivity">
+    >
 
 
     <LinearLayout
@@ -23,6 +23,11 @@
             android:id="@+id/btn_Close"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/TEMP_DESIgn"
+            android:onClick="GOTO_DESIGN"/>
     </LinearLayout>
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerMemo"

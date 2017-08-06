@@ -2,6 +2,7 @@ package uz.ismoilov.muhriddin.neomemo;
 import android.Manifest;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -19,6 +20,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -27,10 +29,12 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -53,6 +57,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -64,6 +69,7 @@ public class WritingMemoActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_BROWSE = 1234;
     static final int REQUEST_TAKE_PHOTO = 1;
 
+    TextView memoDateTV;
     EditText editMemoText;
     ImageButton imageMemoEdit;
     ImageButton btnDatePick;
@@ -87,10 +93,13 @@ public class WritingMemoActivity extends AppCompatActivity {
     private String TimeOfMemo;
     private ImageButton cameraImgButton;
     private Uri imgUri;
+    private Uri filePath;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_writing_memo);
+        memoDateTV = (TextView) findViewById(R.id.memoDateTV);
 
         editMemoText = (EditText) findViewById(R.id.editMemoText);
         btnDatePick = (ImageButton) findViewById(R.id.btnDatePick);
@@ -158,11 +167,28 @@ public class WritingMemoActivity extends AppCompatActivity {
 
         }
         else if(id>0){
-            ListViewItem ls =(ListViewItem) i.getSerializableExtra("ListViewItem");
-            editMemoText.setText(ls.getMemoText().toString());
-            String [] ar = ls.getMemoDate().toString().split(" ");
+            ListViewItem lsComing =(ListViewItem) i.getSerializableExtra("ListViewItem");
+            editMemoText.setText(lsComing.getMemoText().toString());
+            String [] ar = lsComing.getMemoDate().toString().split(" ");
             setDateOfMemo(ar[0]);
             setTimeOfMemo(ar[1]);
+            ls.setMemoDate(lsComing.getMemoDate());
+            memoDateTV.setText(lsComing.getMemoDate());
+            Bitmap bitmap = null;
+            try {
+                Uri filepath = Uri.fromFile(new File(lsComing.getLocalPath()));
+
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
+               if(bitmap !=null) {
+                   Imgview.setImageBitmap(bitmap);
+                   ls.setLocalPath(lsComing.getLocalPath());
+
+                   ls.setFirebasePath(lsComing.getFirebasePath());
+               }
+               } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Imgview.setImageBitmap(bitmap);
             btnSaveEdit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -194,28 +220,13 @@ public class WritingMemoActivity extends AppCompatActivity {
                 onCaptureImageResult(data);
             }
             if (requestCode == REQUEST_CODE_BROWSE && resultCode == RESULT_OK && data != null && data.getData() != null) {
-                imgUri = data.getData();
-                //MEDIA GALLERY
-
-                String[] projection = {MediaStore.Images.Media.DATA};
-
-                Cursor cursor = getContentResolver().query(imgUri, projection, null, null, null);
-                cursor.moveToFirst();
-
-                int columnIndex = cursor.getColumnIndex(projection[0]);
-                String filepath = cursor.getString(columnIndex);
-                cursor.close();
-                ls.setImageName(imgUri.getLastPathSegment());
-                Log.i(TAG,"ABSOLUTEPATH "+filepath);
+                filePath = data.getData();
                 try {
-                    Bitmap bm = BitmapFactory.decodeFile(filepath);
-                    Drawable drawable  = new BitmapDrawable(bm);
-                    //Bitmap bm = MediaStore.Images.Media.getBitmap(getContentResolver(), imgUri);
-                    Imgview.setImageBitmap(bm);
-                    ls.setLocalPath(filepath);
-                }
-                finally {
-                    Log.i(TAG,"Error o bitmao drawable");
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
+                    Imgview.setImageBitmap(bitmap);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
                 /* catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -233,10 +244,11 @@ public class WritingMemoActivity extends AppCompatActivity {
         return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
     }
     public void browseIntent() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        Intent intent = new Intent();
         intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQUEST_CODE_BROWSE);
 
-        startActivityForResult(Intent.createChooser(intent, "Select image"), REQUEST_CODE_BROWSE);
     }
     private void cameraIntent(){
         Log.i(TAG,"Intent");
@@ -254,44 +266,8 @@ public class WritingMemoActivity extends AppCompatActivity {
 
         }
 
-        StorageReference userImages = usersStorageRef.child(fUserId.toString()).child("images");
-        if(ls.getLocalPath()!= null){
-            final ProgressDialog dialog = new ProgressDialog(this);
-            dialog.setTitle("Uploading image");
-            dialog.show();
-
-            ContextWrapper wrapper = new ContextWrapper(getApplicationContext());
-            File fileDir = wrapper.getDir("Images",MODE_PRIVATE);
-
-            Uri file = Uri.fromFile(new File(ls.getLocalPath()));
-            String FileName = ls.getLocalPath();
-            StorageReference currentImagesRef = userImages.child(FileName.substring(FileName.indexOf("Images/")+7,FileName.length()));
-            Log.i(TAG,FileName.substring(FileName.indexOf("Images/")+7,FileName.length()));
-
-
-            UploadTask uploadTask = currentImagesRef.putFile(file);
-            uploadTask.addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-
-                    //Dimiss dialog when error
-                    dialog.dismiss();
-                    //Display err toast msg
-                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            })
-                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-
-                        @Override
-                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-
-                            //Show upload progress
-
-                        }
-                    });
-        } else {
-            Toast.makeText(getApplicationContext(), "Please select image", Toast.LENGTH_SHORT).show();
-        }
+        //upload image
+        uploadFile();
 
         ls.setMemoText(editMemoText.getText().toString());
 
@@ -319,7 +295,13 @@ public class WritingMemoActivity extends AppCompatActivity {
             stream = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.PNG,100,stream);
 
+
             ls.setLocalPath(file.getPath());
+
+
+            Uri filepath = Uri.fromFile(new File(ls.getLocalPath()));
+
+
             Log.i(TAG,"write"+file.getPath());
             stream.flush();
             stream.close();
@@ -346,19 +328,88 @@ public class WritingMemoActivity extends AppCompatActivity {
         DateOfMemo = dateOfMemo;
     }
 
-    public String getRealPathFromURI( Uri contentUri) {
-        Cursor cursor = null;
 
-            String[] proj = {MediaStore.Images.Media.DATA};
-            cursor = managedQuery(contentUri, proj, null, null, null);
-            if(cursor==null) return null;
+    //this method will upload the file
+    private void uploadFile() {
 
-            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            cursor.moveToFirst();
-            return cursor.getString(column_index);
+        //if there is a file to upload
+        if (filePath != null) {
+            //displaying a progress dialog while upload is going on
+            final ProgressDialog progressDialog = new ProgressDialog(this);
+            progressDialog.setTitle("Uploading");
+            progressDialog.show();
+            ls.setLocalPath(filePath.toString());
+            StorageReference userImages = usersStorageRef.child(fUserId.toString()).child("images");
+            String FileName = filePath.getLastPathSegment();
 
+            StorageReference currentImagesRef = userImages.child(FileName);
+            Log.i(TAG,FileName);
+            currentImagesRef.putFile(filePath)
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @SuppressWarnings("VisibleForTests")
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            //if the upload is successfull
+                            //hiding the progress dialog
+                            progressDialog.dismiss();
+                           Uri downloadUri =  taskSnapshot.getDownloadUrl();
+                            ls.setFirebasePath(downloadUri.toString());
+                            //and displaying a success toast
+                            Toast.makeText(getApplicationContext(), "File Uploaded ", Toast.LENGTH_LONG).show();
+                            //and displaying error message
+                            Toast.makeText(getApplicationContext(),ls.getFirebasePath(), Toast.LENGTH_LONG).show();
+
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            //if the upload is not successfull
+                            //hiding the progress dialog
+                            progressDialog.dismiss();
+
+                            //and displaying error message
+                            Toast.makeText(getApplicationContext(), exception.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @SuppressWarnings("VisibleForTests")
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            //calculating progress percentage
+                            double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+
+                            //displaying percentage in progress dialog
+                            progressDialog.setMessage("Uploaded " + ((int) progress) + "%...");
+                        }
+                    });
+        }
+        //if there is not any file
+        else {
+            //you can display an error toast
+        }
     }
 
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void chooseDateBtn(View view) {
+
+        int year = Integer.parseInt(ls.getMemoDate().substring(0, 4));
+        int month = Integer.parseInt(ls.getMemoDate().substring(5, 7));
+        int day = Integer.parseInt(ls.getMemoDate().substring(8, 10));
+        //Toast.makeText(this, "" + year + month + day, Toast.LENGTH_SHORT).show();
+        DatePickerDialog dialog = new DatePickerDialog(this, null, year, month -1 , day);
+        dialog.show();
+        dialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int y, int m, int d) {
+                String date = y+"/"+m+"/"+d;
+                ls.setMemoDate(date);
+                memoDateTV.setText(ls.getMemoDate());
+            }
+        });
+
+    }
 }
 
 
