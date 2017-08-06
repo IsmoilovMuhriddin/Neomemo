@@ -31,6 +31,8 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import at.markushi.ui.CircleButton;
+
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "firebaseLog" ;
@@ -148,13 +150,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    btn_Close.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            FirebaseAuth.getInstance().signOut();
-                        }
-                    });
+
 
                 } else {
                     // User is signed out
